@@ -13,10 +13,14 @@ public class Enemigo : MonoBehaviour
     private NavMeshAgent agente;
     public Transform[] puntosRuta;
     private int indiceRuta = 0;
-    private bool playerEnRango = false; // Bandera de rango
-    [SerializeField] private float distanciaDeteccionPlayer; // Manipulable desde Unity
+    private bool playerEnRango = false;
+    [SerializeField] private float distanciaDeteccionPlayer;
     private SpriteRenderer spriteEnemigo;
-    private Transform mirarHacia; // Puntos de interés
+    private Transform mirarHacia;
+    
+    // ✅ NUEVO: Variables para mejorar la patrulla
+    [SerializeField] private float distanciaMinimaPunto = 0.5f;
+    private bool estaPatrullando = true;
 
     private void Awake()
     {
@@ -29,38 +33,67 @@ public class Enemigo : MonoBehaviour
         vidaEnemigo = 1;
         agente.updateRotation = false;
         agente.updateUpAxis = false;
+        
+        // ✅ INICIAR PATRULLA AUTOMÁTICAMENTE
+        if (puntosRuta.Length > 0)
+        {
+            agente.SetDestination(puntosRuta[indiceRuta].position);
+            mirarHacia = puntosRuta[indiceRuta];
+        }
     }
 
     void Update()
     {
         this.transform.position = new Vector3(transform.position.x, transform.position.y, 0);
-        float distancia = Vector3.Distance(personaje.position, this.transform.position);
-        // Movimiento entre puntos de ruta
-        
-        
-        if (this.transform.position == puntosRuta[indiceRuta].position)
+        float distanciaAlJugador = Vector3.Distance(personaje.position, this.transform.position);
+
+        // ✅ DETECCIÓN MEJORADA DEL JUGADOR
+        bool jugadorEnRangoAnterior = playerEnRango;
+        playerEnRango = distanciaAlJugador < distanciaDeteccionPlayer;
+
+        // ✅ SI EL JUGADOR SALE DEL RANGO, VOLVER A LA PATRULLA
+        if (jugadorEnRangoAnterior && !playerEnRango)
         {
-            if (indiceRuta <= puntosRuta.Length - 1)
+            estaPatrullando = true;
+            if (puntosRuta.Length > 0)
             {
+                // Volver al punto de ruta más cercano
+                indiceRuta = ObtenerPuntoMasCercano();
+                agente.SetDestination(puntosRuta[indiceRuta].position);
+                mirarHacia = puntosRuta[indiceRuta];
+            }
+        }
+
+        // ✅ LÓGICA PRINCIPAL DE MOVIMIENTO
+        if (playerEnRango)
+        {
+            // SEGUIR AL JUGADOR
+            estaPatrullando = false;
+            agente.SetDestination(personaje.position);
+            mirarHacia = personaje;
+        }
+        else if (estaPatrullando && puntosRuta.Length > 0)
+        {
+            // PATRULLAR ENTRE PUNTOS
+            float distanciaAlPunto = Vector3.Distance(transform.position, puntosRuta[indiceRuta].position);
+            
+            if (distanciaAlPunto <= distanciaMinimaPunto)
+            {
+                // AVANZAR AL SIGUIENTE PUNTO
                 indiceRuta++;
-            }
-            else if (indiceRuta == puntosRuta.Length - 1)
-            {
-                indiceRuta = 0;
+                if (indiceRuta >= puntosRuta.Length)
+                {
+                    indiceRuta = 0;
+                }
+                agente.SetDestination(puntosRuta[indiceRuta].position);
+                mirarHacia = puntosRuta[indiceRuta];
             }
         }
 
-        // Detección del jugador
-        if (distancia < distanciaDeteccionPlayer)
-        {
-            playerEnRango = true;
-        }
-        else
-        {
-            playerEnRango = false;
-        }
+        // ✅ ROTACIÓN (SIEMPRE ACTIVA)
+        RotaEnemigo();
 
-        // Frecuencia de ataque
+        // ✅ SECCIÓN DEL DAÑO (SIN MODIFICACIONES)
         if (tiempoSigAtaque > 0)
         {
             tiempoSigAtaque = freAtaque + iniciaConteo - Time.time;
@@ -69,12 +102,28 @@ public class Enemigo : MonoBehaviour
         {
             tiempoSigAtaque = 0;
             VidasPlayer.perderVida = 1;
-            SiguePlayer(playerEnRango);
-            RotaEnemigo();
         }
     }
 
-    // 🔹 MÉTODO FUERA DE UPDATE()
+    // ✅ NUEVO MÉTODO: Encontrar el punto de ruta más cercano
+    private int ObtenerPuntoMasCercano()
+    {
+        int puntoMasCercano = 0;
+        float distanciaMinima = Mathf.Infinity;
+        
+        for (int i = 0; i < puntosRuta.Length; i++)
+        {
+            float distancia = Vector3.Distance(transform.position, puntosRuta[i].position);
+            if (distancia < distanciaMinima)
+            {
+                distanciaMinima = distancia;
+                puntoMasCercano = i;
+            }
+        }
+        return puntoMasCercano;
+    }
+
+    // ✅ MÉTODO DE SEGUIMIENTO (SIMPLIFICADO)
     private void SiguePlayer(bool playerEnRango)
     {
         if (playerEnRango)
@@ -82,27 +131,24 @@ public class Enemigo : MonoBehaviour
             agente.SetDestination(personaje.position);
             mirarHacia = personaje;
         }
-        else
-        {
-            agente.SetDestination(puntosRuta[indiceRuta].position);
-            mirarHacia = puntosRuta[indiceRuta];
-        }
     }
 
     private void RotaEnemigo()
     {
-        if (this.transform.position.x > mirarHacia.position.x)
+        if (mirarHacia != null)
         {
-            spriteEnemigo.flipX = true;
-            Debug.Log("FlipX");
-        }
-        else
-        {
-            spriteEnemigo.flipX = false;
-            Debug.Log("Sin FlipX");
+            if (this.transform.position.x > mirarHacia.position.x)
+            {
+                spriteEnemigo.flipX = true;
+            }
+            else
+            {
+                spriteEnemigo.flipX = false;
+            }
         }
     }
 
+    // ✅ SECCIÓN DEL DAÑO (SIN MODIFICACIONES)
     private void OnTriggerEnter2D(Collider2D obj)
     {
         if (obj.tag == "Player")
