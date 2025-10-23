@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-
+//ataque a distancia
 public class CAD : MonoBehaviour
 {
 
