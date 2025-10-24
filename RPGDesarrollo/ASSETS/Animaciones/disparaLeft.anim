@@ -218,7 +218,8 @@ AnimationClip:
   - time: 1.0166667
     functionName: EmiteProyectil
     data: 
-    objectReferenceParameter: {fileID: 0}
+    objectReferenceParameter: {fileID: 4806012310251853244, guid: 938e68f4a0bf6cf40859846dd098f005,
+      type: 3}
     floatParameter: 0
     intParameter: 0
     messageOptions: 0

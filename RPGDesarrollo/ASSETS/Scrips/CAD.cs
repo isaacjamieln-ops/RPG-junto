@@ -12,7 +12,7 @@ public class CAD : MonoBehaviour
     public Transform puntoEmision;
     private Animator anim; //animacion
     public static int dirDistaparo = 0;
-    public static bool disparando = false;
+    public static bool disparando =false;
     // Start is called before the first frame update
     void Start()
     {
@@ -32,7 +32,7 @@ public class CAD : MonoBehaviour
         if (Input.GetButtonDown("Fire2") && tiempoSigAtaque <= 0)
         {
             disparando = true;
-            //activaCapa("Ataque");
+            activaCapa("Ataque");
             Dispara();
             tiempoSigAtaque = timepoEntreAtaques;
         }

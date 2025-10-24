@@ -11,14 +11,15 @@ public class CCC : MonoBehaviour
     public float timepoEntreAtaques;
     public float tiempoSigAtaque;
     private Animator anim;
+
     public static bool atacando;
-    void Start()
+    private void Start()
     {
         anim = GetComponent<Animator>();
     }
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
         if (tiempoSigAtaque < 0.05f && timepoEntreAtaques > 0)
         {

@@ -11,36 +11,30 @@ public class movPlayer : MonoBehaviour
     public float velMovimiento;
     public Rigidbody2D rb;
     public Animator anim;
+    private bool PlayerMoviendose = false;
     //Variable con la que se mueve el árbol de animaciones
+    private float ultimoMovX, ultimoMovY;
     public static int dirAtaque = 0; //1.-Front , 2.- Back, 3.-Left 4.-Right
 
-    [SerializeField] private string capaide;
-    [SerializeField] private string capaCaminar; 
-    private bool PlayerMoviendose = false;
-    private float ultimoMovX, ultimoMovY;
+    // [SerializeField] private string capaide;
+    // [SerializeField] private string capaCaminar; 
     // Permite realizar calculos cuadro a cuadro
     void FixedUpdate()
     {
         Movimiento();
-        if(CCC.atacando == false && CAD.disparando== false)
+        if (CCC.atacando == false && CAD.disparando == false)
         {
             AnimacionesMago();
         }
-        // Movimiento();
-        // AnimacionesMago();
-        // if(CCC.atacando == false && CAD.disparando == false)
-        // {
-        //     AnimacionesMago();
-        // }
-    }
 
-    private void Movimiento()
+    }
+    
+     private void Movimiento()
     {
         float movimientoX = Input.GetAxisRaw("Horizontal");
         float movimientoY = Input.GetAxisRaw("Vertical");
         dirMovimiento = new Vector2(movimientoX, movimientoY).normalized;
-        rb.velocity = new Vector2(dirMovimiento.x * velMovimiento,
-        dirMovimiento.y * velMovimiento);
+        rb.velocity = new Vector2(dirMovimiento.x * velMovimiento, dirMovimiento.y * velMovimiento);
 
         //Condicionales de movimiento
         if (movimientoX == -1)
@@ -69,12 +63,12 @@ public class movPlayer : MonoBehaviour
             PlayerMoviendose = true;
             ultimoMovX = movimientoX;
             ultimoMovY = movimientoY;
-
         }
 
         ActualizarCapa();
 
     }
+
     private void AnimacionesMago()
     {
         anim.SetFloat("movimientoX", ultimoMovX);
@@ -93,17 +87,17 @@ public class movPlayer : MonoBehaviour
              Debug.Log("ide");
 
          }*/
+
         if (CCC.atacando == false && CAD.disparando == false)
         {//Llamada de las clases de ataque
             if (PlayerMoviendose)
          {
-             activaCapa(capaCaminar);
-             Debug.Log("Caminar");
+             activaCapa("Caminar");
+            
          }
          else
          {
-             activaCapa(capaide);
-             Debug.Log("ide");
+                activaCapa("ide");
 
          } 
         }
@@ -117,7 +111,7 @@ public class movPlayer : MonoBehaviour
     //llamar a capa correspondiente
     private void activaCapa(string nombre)
     {
-        for (int i = 0; i < anim.layerCount; i++)
+        for (int i= 0; i < anim.layerCount; i++)
         {
             anim.SetLayerWeight(i, 0);//Ambos layer los mandamos a 0
         }
