@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using UnityEngine;
 
 public class movPlayer : MonoBehaviour
@@ -13,7 +14,7 @@ public class movPlayer : MonoBehaviour
     //Variable con la que se mueve el árbol de animaciones
     public static int dirAtaque = 0; //1.-Front , 2.- Back, 3.-Left 4.-Right
 
-    [SerializeField] private string capaIde;
+    [SerializeField] private string capaide;
     [SerializeField] private string capaCaminar; 
     private bool PlayerMoviendose = false;
     private float ultimoMovX, ultimoMovY;
@@ -21,11 +22,16 @@ public class movPlayer : MonoBehaviour
     void FixedUpdate()
     {
         Movimiento();
-        AnimacionesMago();
-        if(CCC.atacando == false && CAD.disparando == false)
+        if(CCC.atacando == false && CAD.disparando== false)
         {
             AnimacionesMago();
         }
+        // Movimiento();
+        // AnimacionesMago();
+        // if(CCC.atacando == false && CAD.disparando == false)
+        // {
+        //     AnimacionesMago();
+        // }
     }
 
     private void Movimiento()
@@ -90,16 +96,20 @@ public class movPlayer : MonoBehaviour
         if (CCC.atacando == false && CAD.disparando == false)
         {//Llamada de las clases de ataque
             if (PlayerMoviendose)
-            {
-                activaCapa("Caminar");
-            }
-            else
-            {
-                activaCapa("ide");
-            }
+         {
+             activaCapa(capaCaminar);
+             Debug.Log("Caminar");
+         }
+         else
+         {
+             activaCapa(capaide);
+             Debug.Log("ide");
+
+         } 
         }
         else
         {
+            
             activaCapa("Ataque");
         }
     }

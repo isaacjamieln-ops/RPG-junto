@@ -37,18 +37,23 @@ public class CCC : MonoBehaviour
         }
     }
 
-    private void Golpe() //Condicionales de direccion de Golpe
+private void Golpe()
     {
-        if (movPlayer.dirAtaque == 1) {
-            anim.SetTrigger("pegar-arriba");
-        }else if (movPlayer.dirAtaque == 2) {
-            anim.SetTrigger("pegar-abajo");
-        } else if (movPlayer.dirAtaque == 3) {
-            anim.SetTrigger("pegar-izquierda");
-        } else if (movPlayer.dirAtaque == 4) {
-            anim.SetTrigger("pegar-derecha");
+        if (movPlayer.dirAtaque == 1)
+        {
+            anim.SetTrigger("ataqueFront");
+        } else if (movPlayer.dirAtaque == 2)
+        {
+            anim.SetTrigger("ataqueBack");
+        } else if (movPlayer.dirAtaque == 3)
+        {
+            anim.SetTrigger("ataqueLeft");
+        } else if (movPlayer.dirAtaque == 4)
+        {
+            anim.SetTrigger("ataqueRight");
         }
     }
+
 
     private void verificaGolpe()//Evento agregado a la Animacion
     {

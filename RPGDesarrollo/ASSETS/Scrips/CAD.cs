@@ -32,23 +32,27 @@ public class CAD : MonoBehaviour
         if (Input.GetButtonDown("Fire2") && tiempoSigAtaque <= 0)
         {
             disparando = true;
-            activaCapa("Ataque");
+            //activaCapa("Ataque");
             Dispara();
             tiempoSigAtaque = timepoEntreAtaques;
         }
 
     }
 
-    private void Dispara() //Condicionales de direccion de Golpe
+
+    void Dispara()
     {
-        if (movPlayer.dirAtaque == 1) {
-            anim.SetTrigger("ataque-abajo");
+        if (movPlayer.dirAtaque == 1)
+        {
+            anim.SetTrigger("disparaFront");
         } else if (movPlayer.dirAtaque == 2) {
-            anim.SetTrigger("ataque-arriba");
-        } else if (movPlayer.dirAtaque == 3) {
-            anim.SetTrigger("ataque-izquierda");
-        } else if (movPlayer.dirAtaque == 4) {
-            anim.SetTrigger("ataque-derecha");
+            anim.SetTrigger("disparaBack");
+        } else if (movPlayer.dirAtaque == 3)
+        {
+            anim.SetTrigger("disparaLeft");
+        } else if (movPlayer.dirAtaque == 4)
+        {
+            anim.SetTrigger("disparaRight");
         }
     }
 
