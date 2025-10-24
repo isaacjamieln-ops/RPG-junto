@@ -6,7 +6,7 @@ using UnityEngine.AI;
 
 public class Enemigo : MonoBehaviour
 {
-    public static int vidaEnemigo = 1;
+    //public static int vidaEnemigo = 1;
     private float freAtaque = 2.5f, tiempoSigAtaque = 0, iniciaConteo;
 
     public Transform personaje;
@@ -17,9 +17,10 @@ public class Enemigo : MonoBehaviour
     [SerializeField] private float distanciaDeteccionPlayer;
     private SpriteRenderer spriteEnemigo;
     private Transform mirarHacia;
-    
+
     // ✅ NUEVO: Variables para mejorar la patrulla
     [SerializeField] private float distanciaMinimaPunto = 0.5f;
+    [SerializeField] private int vidaEnemigo = 1;
     private bool estaPatrullando = true;
 
     private void Awake()
