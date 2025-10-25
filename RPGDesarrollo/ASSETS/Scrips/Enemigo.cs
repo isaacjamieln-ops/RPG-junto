@@ -20,7 +20,7 @@ public class Enemigo : MonoBehaviour
 
     // ✅ NUEVO: Variables para mejorar la patrulla
     [SerializeField] private float distanciaMinimaPunto = 0.5f;
-    [SerializeField] private int vidaEnemigo = 1;
+    [SerializeField] private int vidaEnemigo;
     private bool estaPatrullando = true;
 
     private void Awake()

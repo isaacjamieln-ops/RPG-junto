@@ -10,6 +10,10 @@ TagManager:
   - portal2r
   - Limites
   - Enemigo
+  - portal3
+  - portal3r
+  - portal4
+  - portal4r
   layers:
   - Default
   - TransparentFX

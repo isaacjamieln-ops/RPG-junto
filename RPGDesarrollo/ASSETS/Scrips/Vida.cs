@@ -6,7 +6,7 @@ public class Vida : MonoBehaviour
 {
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.gameObject.CompareTag("player"))
+        if (other.gameObject.CompareTag("Player"))
         {
             GameManager.Instance.RecuperarVida();
             Destroy(this.gameObject);

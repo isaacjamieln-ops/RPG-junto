@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class disparaProyectil : MonoBehaviour
 {
+    private SpriteRenderer spriteBala;
     [SerializeField]private float velocidad = 12f;
     
     void Start()
@@ -37,6 +38,7 @@ public class disparaProyectil : MonoBehaviour
         else if (CAD.dirDistaparo == 3)
         {
             transform.position += new Vector3(-1, 0, 0) * Time.deltaTime * velocidad;
+            //spriteBala.flipX = true;
         }
         else if (CAD.dirDistaparo == 4)
         {
