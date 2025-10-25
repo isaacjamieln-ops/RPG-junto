@@ -17,6 +17,7 @@ public class Enemigo : MonoBehaviour
     [SerializeField] private float distanciaDeteccionPlayer;
     private SpriteRenderer spriteEnemigo;
     private Transform mirarHacia;
+    private Animator anim;
 
     // ✅ NUEVO: Variables para mejorar la patrulla
     [SerializeField] private float distanciaMinimaPunto = 0.5f;
