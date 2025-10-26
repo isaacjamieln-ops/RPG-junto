@@ -35,7 +35,7 @@ public class VidasPlayer : MonoBehaviour
         }
     }
 
-    private void DibujaVida(int vida)
+    public void DibujaVida(int vida)
     {
         RectTransform transformImagen = vidaPlayer.GetComponent<RectTransform>();//Modifica el ancho de las imageners
         transformImagen.sizeDelta = new Vector2(anchoVidaPlayer * (float)vida / (float)vidasINI, transformImagen.sizeDelta.y);
