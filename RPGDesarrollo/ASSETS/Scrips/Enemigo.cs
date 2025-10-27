@@ -19,7 +19,7 @@ public class Enemigo : MonoBehaviour
     private Transform mirarHacia;
     private Animator anim;
 
-    // ✅ NUEVO: Variables para mejorar la patrulla
+    //  NUEVO: Variables para mejorar la patrulla
     [SerializeField] private float distanciaMinimaPunto = 0.5f;
     [SerializeField] private int vidaEnemigo;
     private bool estaPatrullando = true;
@@ -36,7 +36,7 @@ public class Enemigo : MonoBehaviour
         agente.updateRotation = false;
         agente.updateUpAxis = false;
         
-        // ✅ INICIAR PATRULLA AUTOMÁTICAMENTE
+        // INICIAR PATRULLA AUTOMÁTICAMENTE
         if (puntosRuta.Length > 0)
         {
             agente.SetDestination(puntosRuta[indiceRuta].position);
@@ -49,11 +49,11 @@ public class Enemigo : MonoBehaviour
         this.transform.position = new Vector3(transform.position.x, transform.position.y, 0);
         float distanciaAlJugador = Vector3.Distance(personaje.position, this.transform.position);
 
-        // ✅ DETECCIÓN MEJORADA DEL JUGADOR
+        // DETECCIÓN MEJORADA DEL JUGADOR
         bool jugadorEnRangoAnterior = playerEnRango;
         playerEnRango = distanciaAlJugador < distanciaDeteccionPlayer;
 
-        // ✅ SI EL JUGADOR SALE DEL RANGO, VOLVER A LA PATRULLA
+        // SI EL JUGADOR SALE DEL RANGO, VOLVER A LA PATRULLA
         if (jugadorEnRangoAnterior && !playerEnRango)
         {
             estaPatrullando = true;
@@ -66,7 +66,7 @@ public class Enemigo : MonoBehaviour
             }
         }
 
-        // ✅ LÓGICA PRINCIPAL DE MOVIMIENTO
+        // LÓGICA PRINCIPAL DE MOVIMIENTO
         if (playerEnRango)
         {
             // SEGUIR AL JUGADOR
@@ -92,10 +92,10 @@ public class Enemigo : MonoBehaviour
             }
         }
 
-        // ✅ ROTACIÓN (SIEMPRE ACTIVA)
+        // ROTACIÓN (SIEMPRE ACTIVA)
         RotaEnemigo();
 
-        // ✅ SECCIÓN DEL DAÑO (SIN MODIFICACIONES)
+        // SECCIÓN DEL DAÑO (SIN MODIFICACIONES)
         if (tiempoSigAtaque > 0)
         {
             tiempoSigAtaque = freAtaque + iniciaConteo - Time.time;
@@ -107,7 +107,7 @@ public class Enemigo : MonoBehaviour
         }
     }
 
-    // ✅ NUEVO MÉTODO: Encontrar el punto de ruta más cercano
+    // NUEVO MÉTODO: Encontrar el punto de ruta más cercano
     private int ObtenerPuntoMasCercano()
     {
         int puntoMasCercano = 0;
@@ -125,7 +125,7 @@ public class Enemigo : MonoBehaviour
         return puntoMasCercano;
     }
 
-    // ✅ MÉTODO DE SEGUIMIENTO (SIMPLIFICADO)
+    // MÉTODO DE SEGUIMIENTO (SIMPLIFICADO)
     private void SiguePlayer(bool playerEnRango)
     {
         if (playerEnRango)
@@ -150,7 +150,7 @@ public class Enemigo : MonoBehaviour
         }
     }
 
-    // ✅ SECCIÓN DEL DAÑO (SIN MODIFICACIONES)
+    // SECCIÓN DEL DAÑO (SIN MODIFICACIONES)
     private void OnTriggerEnter2D(Collider2D obj)
     {
         if (obj.tag == "Player")
