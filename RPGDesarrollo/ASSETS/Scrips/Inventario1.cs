@@ -8,7 +8,7 @@ public class Inventario1 : MonoBehaviour
     private bool muestraInventario1;
     public GameObject goInventario1;
 
-    [SerializeField] private string[] valoresInventario1; // Arreglo de objetos en el inventario
+    [SerializeField] private string[] valoresInventario1 = new string[20]; // Arreglo de objetos en el inventario
 
     // Contadores de objetos acumulables
     private int numPCV, numPCM, numMPV, numMPM, numMO, numEX, numGE, numPEZ;
@@ -19,11 +19,13 @@ public class Inventario1 : MonoBehaviour
     // Sprites de objetos
     public Sprite PCV, PCM, MPV, MPM, EM, BS, FM, BA, AVI, AM, AV, AAL, MO, EX, GE, PEZ, contenedor;
 
+    // Referencia al sistema de vida del jugador
+    private VidasPlayer vidasPlayer;
+
     void Start()
     {
-        // ⚠️ Verificación de referencia
         if (goInventario1 == null)
-            Debug.LogError("⚠️ [Inventario1] goInventario1 no está asignado en el inspector. Asigna el panel de inventario.");
+            Debug.LogError("⚠️ [Inventario1] goInventario1 no está asignado en el inspector.");
 
         muestraInventario1 = false;
         BorraArreglo();
@@ -36,11 +38,19 @@ public class Inventario1 : MonoBehaviour
             botonesInventario1 = goInventario1.GetComponentsInChildren<Button>(true);
         else
             botonesInventario1 = new Button[0];
+
+        // Buscar VidasPlayer automáticamente
+        vidasPlayer = FindObjectOfType<VidasPlayer>();
+        if (vidasPlayer == null)
+            Debug.LogWarning("⚠️ [Inventario1] No se encontró 'VidasPlayer' en la escena.");
+
+        // CONECTAR BOTONES AUTOMÁTICAMENTE
+        ConectarBotonesConFunciones();
     }
 
     public void StatusInventario()
     {
-        if (goInventario1 == null) return; // Evita error si no está asignado
+        if (goInventario1 == null) return;
 
         if (muestraInventario1)
         {
@@ -57,6 +67,38 @@ public class Inventario1 : MonoBehaviour
         }
     }
 
+    // ✅ NUEVO: Conectar botones con funciones de uso
+    private void ConectarBotonesConFunciones()
+    {
+        if (botonesInventario1 == null || botonesInventario1.Length == 0) return;
+
+        for (int i = 0; i < botonesInventario1.Length; i++)
+        {
+            int index = i; // Importante: capturar el índice para el closure
+            Button boton = botonesInventario1[i];
+            
+            // Remover listeners previos y agregar nuevo
+            boton.onClick.RemoveAllListeners();
+            boton.onClick.AddListener(() => OnBotonInventarioClickeado(index));
+        }
+        
+        Debug.Log("🔗 [Inventario1] Botones conectados con funciones de uso");
+    }
+
+    // ✅ NUEVO: Método que se ejecuta cuando se clickea un botón del inventario
+    private void OnBotonInventarioClickeado(int indiceBoton)
+    {
+        if (indiceBoton < 0 || indiceBoton >= valoresInventario1.Length) return;
+
+        string objeto = valoresInventario1[indiceBoton];
+        Debug.Log($"🖱️ [Inventario1] Botón clickeado: {objeto} en posición {indiceBoton}");
+
+        if (!string.IsNullOrEmpty(objeto))
+        {
+            UsarItem(objeto);
+        }
+    }
+
     private void ActualizaBotones()
     {
         if (botonesInventario1 == null || botonesInventario1.Length == 0) return;
@@ -67,7 +109,8 @@ public class Inventario1 : MonoBehaviour
             if (string.IsNullOrEmpty(objeto))
             {
                 botonesInventario1[i].GetComponent<Image>().sprite = contenedor;
-                botonesInventario1[i].GetComponentInChildren<Text>().text = "";
+                Text textoBoton = botonesInventario1[i].GetComponentInChildren<Text>();
+                if (textoBoton != null) textoBoton.text = "";
             }
             else
             {
@@ -78,6 +121,7 @@ public class Inventario1 : MonoBehaviour
 
     public void EscribeEnArreglo(string objeto)
     {
+        Debug.Log("📦 [Inventario1] Recolectado objeto: " + objeto);
         int pos = VerificaEnArreglo(objeto);
 
         if (pos == -1) // No está en el inventario
@@ -142,7 +186,7 @@ public class Inventario1 : MonoBehaviour
             case "GE": icono = GE; numGE++; texto = "x" + numGE; break;
             case "PEZ": icono = PEZ; numPEZ++; texto = "x" + numPEZ; break;
 
-            // Objetos únicos — solo se muestran una vez
+            // Objetos únicos
             case "EM": icono = EM; texto = ""; break;
             case "BS": icono = BS; texto = ""; break;
             case "FM": icono = FM; texto = ""; break;
@@ -154,7 +198,8 @@ public class Inventario1 : MonoBehaviour
         }
 
         boton.GetComponent<Image>().sprite = icono;
-        boton.GetComponentInChildren<Text>().text = texto;
+        Text textoBoton = boton.GetComponentInChildren<Text>();
+        if (textoBoton != null) textoBoton.text = texto;
     }
 
     private void BorraArreglo()
@@ -162,6 +207,59 @@ public class Inventario1 : MonoBehaviour
         for (int i = 0; i < valoresInventario1.Length; i++)
         {
             valoresInventario1[i] = "";
+        }
+    }
+
+    // ✅ CORREGIDO: Método para usar objetos
+    public void UsarItem(string objeto)
+    {
+        Debug.Log("🩹 [Inventario1] Intentando usar objeto: " + objeto);
+
+        if (vidasPlayer == null)
+        {
+            Debug.LogError("❌ [Inventario1] No se encontró referencia a VidasPlayer.");
+            return;
+        }
+
+        switch (objeto)
+        {
+            case "PCV":
+                if (numPCV > 0)
+                {
+                    vidasPlayer.Curar(1); // Cura 1 punto de vida
+                    numPCV--;
+                    Debug.Log("💚 [Inventario1] Usó PCV, curación aplicada. Restan: " + numPCV);
+                    
+                    // Actualizar la UI
+                    if (numPCV == 0) 
+                    {
+                        EliminaDelInventario("PCV");
+                    }
+                    ActualizaBotones();
+                }
+                else
+                {
+                    Debug.LogWarning("⚠️ [Inventario1] No hay PCV disponibles para usar");
+                }
+                break;
+
+            case "PCM":
+                // Aquí puedes agregar lógica para el mana
+                Debug.Log("🔵 [Inventario1] Usó PCM (poción de mana)");
+                break;
+
+            default:
+                Debug.Log($"ℹ️ [Inventario1] El objeto {objeto} no es usable o no tiene función definida");
+                break;
+        }
+    }
+
+    private void EliminaDelInventario(string objeto)
+    {
+        int pos = VerificaEnArreglo(objeto);
+        if (pos != -1)
+        {
+            valoresInventario1[pos] = "";
         }
     }
 }
