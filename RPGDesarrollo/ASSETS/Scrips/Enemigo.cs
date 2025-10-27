@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using NavMeshPlus.Extensions;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -18,11 +19,15 @@ public class Enemigo : MonoBehaviour
     private SpriteRenderer spriteEnemigo;
     private Transform mirarHacia;
     private Animator anim;
+    public int vida = 3; // cantidad de vida
+    public GameObject recompensaPrefab; // prefab de la recompensa a soltar
+    public Transform puntoDrop; // punto donde aparecerá (opcional)
 
     // ✅ NUEVO: Variables para mejorar la patrulla
     [SerializeField] private float distanciaMinimaPunto = 0.5f;
     [SerializeField] private int vidaEnemigo;
     private bool estaPatrullando = true;
+    public GameObject recompensa;
 
     private void Awake()
     {
@@ -169,4 +174,25 @@ public class Enemigo : MonoBehaviour
             Destroy(gameObject);
         }
     }
-}
+
+void Morir()
+    {
+        Debug.Log("El enemigo ha muerto.");
+
+        // Generar la recompensa al morir
+        if (recompensaPrefab != null)
+        {
+            Vector3 posicionDrop = puntoDrop != null ? puntoDrop.position : transform.position;
+            Instantiate(recompensaPrefab, posicionDrop, Quaternion.identity);
+        }
+        else
+        {
+            Debug.LogWarning("No se ha asignado una recompensa al enemigo.");
+        }
+
+        // Destruir al enemigo
+        Destroy(gameObject);
+    }
+    }
+
+

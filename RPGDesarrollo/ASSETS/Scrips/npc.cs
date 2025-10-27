@@ -6,7 +6,7 @@ public class NPC : MonoBehaviour
 {
 public GameObject txtDialogo;
 public int numVisitas;
-    public Sprite txt1, txt2; //Cantidad de texto a eleccion
+    public Sprite txt1, txt2, txt3; //Cantidad de texto a eleccion
     void Start()
     {
         txtDialogo.SetActive(false);
@@ -33,6 +33,11 @@ public int numVisitas;
                 sr.sprite = txt2;
                 sr.flipX = true;
                 break;
+            case 2:
+                sr.sprite = txt3;
+                sr.flipX = true;
+                break;
+            
         }
     }
 
