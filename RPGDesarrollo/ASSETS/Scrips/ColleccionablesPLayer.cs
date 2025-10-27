@@ -4,121 +4,244 @@ using UnityEngine;
 
 public class ColeccionablesPlayer : MonoBehaviour
 {
-    private GameObject player;
+    [Header("Referencias")]
+    public Inventario1 inventario;
+    
+    [Header("Configuración")]
     public static string objAColeccionar = "";
-    private Inventario1 inventario1;
 
     void Start()
     {
-        player = GameObject.Find("Player");
-        objAColeccionar = "";
-        inventario1 = FindObjectOfType<Inventario1>();
+        // Buscar automáticamente el inventario si no está asignado
+        if (inventario == null)
+        {
+            inventario = FindObjectOfType<Inventario1>();
+            if (inventario == null)
+            {
+                Debug.LogError(" No se encontró el componente Inventario1 en la escena");
+            }
+        }
     }
 
-    private void OnTriggerEnter2D(Collider2D obj)
+    private void OnTriggerEnter2D(Collider2D collision)
     {
-        // NUEVO SISTEMA - ItemRecolectable (prioridad)
-        ItemRecolectable item = obj.GetComponent<ItemRecolectable>();
-
-        if (item != null)
+        string objectTag = collision.tag;
+        Debug.Log($" Trigger detectado con: {collision.name} - Tag: {objectTag}");
+        
+        // Sistema de tags para todos los objetos coleccionables
+        if (objectTag == "PCV")
         {
-            objAColeccionar = item.idItem;
-            inventario1.EscribeEnArreglo(item.idItem);
-            Destroy(obj.gameObject);
+            ManejarPCV(collision);
+        }
+        else if (objectTag == "PCM")
+        {
+            ManejarPCM(collision);
+        }
+        else if (objectTag == "MPV")
+        {
+            ManejarMPV(collision);
+        }
+        else if (objectTag == "MPM")
+        {
+            ManejarMPM(collision);
+        }
+        else if (objectTag == "MO")
+        {
+            ManejarMO(collision);
+        }
+        else if (objectTag == "EX")
+        {
+            ManejarEX(collision);
+        }
+        else if (objectTag == "GE")
+        {
+            ManejarGE(collision);
+        }
+        else if (objectTag == "PEZ")
+        {
+            ManejarPEZ(collision);
+        }
+        else if (objectTag == "EM")
+        {
+            ManejarObjetoUnico(collision, objectTag);
+        }
+        else if (objectTag == "BS")
+        {
+            ManejarObjetoUnico(collision, objectTag);
+        }
+        else if (objectTag == "FM")
+        {
+            ManejarObjetoUnico(collision, objectTag);
+        }
+        else if (objectTag == "BA")
+        {
+            ManejarObjetoUnico(collision, objectTag);
+        }
+        else if (objectTag == "AVI")
+        {
+            ManejarObjetoUnico(collision, objectTag);
+        }
+        else if (objectTag == "AM")
+        {
+            ManejarObjetoUnico(collision, objectTag);
+        }
+        else if (objectTag == "AV")
+        {
+            ManejarObjetoUnico(collision, objectTag);
+        }
+        else if (objectTag == "AAL")
+        {
+            ManejarObjetoUnico(collision, objectTag);
         }
         else
         {
-            // SISTEMA ANTIGUO - Tags (compatibilidad hacia atrás)
-            string tag = obj.tag;
-
-            if (tag == "PCV")
-            {
-                VidasPlayer.vida++;
-                player.GetComponent<VidasPlayer>().DibujaVida(VidasPlayer.vida);
-                Destroy(obj.gameObject);
-            }
-            else if (tag == "PCM")
-            {
-                //Aumentar Mana
-                AplicaCambios(obj);
-            }
-            else if (tag == "MPV")
-            {
-                //Aumentar Maxima Vitalidad
-                AplicaCambios(obj);
-            }
-            else if (tag == "MPM")
-            {
-                //Aumentar Mana Maximo
-                AplicaCambios(obj);
-            }
-            else if (tag == "EM")
-            {
-                //Obtener Espada Maestra
-                AplicaCambios(obj);
-            }
-            else if (tag == "BS")
-            {
-                //Obtener Baculo Sagrado
-                AplicaCambios(obj);
-            }
-            else if (tag == "FM")
-            {
-                //Obtener FiloMiau
-                AplicaCambios(obj);
-            }
-            else if (tag == "BA")
-            {
-                //Obtener Baculo del anillo
-                AplicaCambios(obj);
-            }
-            else if (tag == "AVI")
-            {
-                //Obtener anilllo Vitalidad
-                AplicaCambios(obj);
-            }
-            else if (tag == "AM")
-            {
-                //Obtener anilllo Mana
-                AplicaCambios(obj);
-            }
-            else if (tag == "AV")
-            {
-                //Obtener anilllo Velocidad
-                AplicaCambios(obj);
-            }
-            else if (tag == "AAL")
-            {
-                //Obtener anilllo Almas
-                AplicaCambios(obj);
-            }
-            else if (tag == "MO")
-            {
-                //Aumentar Monedas
-                AplicaCambios(obj);
-            }
-            else if (tag == "EX")
-            {
-                //Aumentar Experiencia
-                AplicaCambios(obj);
-            }
-            else if (tag == "GE")
-            {
-                //Aumentar Gemas
-                AplicaCambios(obj);
-            }
-            else if (tag == "PEZ")
-            {
-                //Aumentar Pescados
-                AplicaCambios(obj);
-            }
+            Debug.Log($" Objeto con tag no reconocido: {objectTag}");
         }
     }
 
-    private void AplicaCambios(Collider2D obj)
+    private void ManejarPCV(Collider2D obj)
     {
-        objAColeccionar = obj.tag;
-        inventario1.EscribeEnArreglo(obj.tag);
+        if (inventario != null)
+        {
+            inventario.EscribeEnArreglo("PCV");
+            Debug.Log(" PCV agregada al inventario");
+        }
+        else
+        {
+            Debug.LogError(" Inventario no encontrado para PCV");
+        }
+        
+        // Aumentar vida inmediatamente
+        VidasPlayer vidas = GetComponent<VidasPlayer>();
+        if (vidas != null)
+        {
+            VidasPlayer.vida++;
+            vidas.DibujaVida(VidasPlayer.vida);
+            Debug.Log(" Vida aumentada inmediatamente");
+        }
+        
         Destroy(obj.gameObject);
+        objAColeccionar = "PCV";
+        Debug.Log(" PCV recolectada y destruida");
+    }
+
+    private void ManejarPCM(Collider2D obj)
+    {
+        if (inventario != null)
+        {
+            inventario.EscribeEnArreglo("PCM");
+            Debug.Log(" PCM agregada al inventario");
+        }
+        Destroy(obj.gameObject);
+        objAColeccionar = "PCM";
+        Debug.Log(" PCM recolectada");
+    }
+
+    private void ManejarMPV(Collider2D obj)
+    {
+        if (inventario != null)
+        {
+            inventario.EscribeEnArreglo("MPV");
+            Debug.Log(" MPV agregada al inventario");
+        }
+        Destroy(obj.gameObject);
+        objAColeccionar = "MPV";
+        Debug.Log(" MPV recolectada");
+    }
+
+    private void ManejarMPM(Collider2D obj)
+    {
+        if (inventario != null)
+        {
+            inventario.EscribeEnArreglo("MPM");
+            Debug.Log(" MPM agregada al inventario");
+        }
+        Destroy(obj.gameObject);
+        objAColeccionar = "MPM";
+        Debug.Log(" MPM recolectada");
+    }
+
+    private void ManejarMO(Collider2D obj)
+    {
+        if (inventario != null)
+        {
+            inventario.EscribeEnArreglo("MO");
+            Debug.Log(" MO agregada al inventario");
+        }
+        Destroy(obj.gameObject);
+        objAColeccionar = "MO";
+        Debug.Log(" Monedas recolectadas");
+    }
+
+    private void ManejarEX(Collider2D obj)
+    {
+        if (inventario != null)
+        {
+            inventario.EscribeEnArreglo("EX");
+            Debug.Log(" EX agregada al inventario");
+        }
+        Destroy(obj.gameObject);
+        objAColeccionar = "EX";
+        Debug.Log(" Experiencia recolectada");
+    }
+
+    private void ManejarGE(Collider2D obj)
+    {
+        if (inventario != null)
+        {
+            inventario.EscribeEnArreglo("GE");
+            Debug.Log(" GE agregada al inventario");
+        }
+        Destroy(obj.gameObject);
+        objAColeccionar = "GE";
+        Debug.Log(" Gemas recolectadas");
+    }
+
+    private void ManejarPEZ(Collider2D obj)
+    {
+        if (inventario != null)
+        {
+            inventario.EscribeEnArreglo("PEZ");
+            Debug.Log(" PEZ agregada al inventario");
+        }
+        Destroy(obj.gameObject);
+        objAColeccionar = "PEZ";
+        Debug.Log(" Pescado recolectado");
+    }
+
+    private void ManejarObjetoUnico(Collider2D obj, string tag)
+    {
+        Debug.Log($" Intentando recolectar objeto único: {tag}");
+        
+        if (inventario != null)
+        {
+            // Verificar si ya tiene el objeto único
+            if (!inventario.YaTieneObjeto(tag))
+            {
+                inventario.EscribeEnArreglo(tag);
+                Destroy(obj.gameObject);
+                objAColeccionar = tag;
+                Debug.Log($" {tag} recolectado (objeto único)");
+            }
+            else
+            {
+                Debug.Log($"ℹ Ya tienes el objeto único {tag}");
+                Destroy(obj.gameObject);
+            }
+        }
+        else
+        {
+            Debug.LogError($" Inventario no encontrado para {tag}");
+            Destroy(obj.gameObject);
+        }
+    }
+
+    // Método para abrir/cerrar inventario desde otros scripts
+    public void ToggleInventario()
+    {
+        if (inventario != null)
+        {
+            inventario.ToggleInventario();
+        }
     }
 }

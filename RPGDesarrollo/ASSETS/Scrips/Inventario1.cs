@@ -5,261 +5,270 @@ using UnityEngine.UI;
 
 public class Inventario1 : MonoBehaviour
 {
-    private bool muestraInventario1;
-    public GameObject goInventario1;
-
-    [SerializeField] private string[] valoresInventario1 = new string[20]; // Arreglo de objetos en el inventario
-
-    // Contadores de objetos acumulables
-    private int numPCV, numPCM, numMPV, numMPM, numMO, numEX, numGE, numPEZ;
-
-    // Referencias a botones
-    private Button[] botonesInventario1;
-
-    // Sprites de objetos
+    [Header("Configuración del Inventario")]
+    public GameObject panelInventario;
+    public int tamañoInventario = 20;
+    
+    [Header("Sprites de Objetos")]
     public Sprite PCV, PCM, MPV, MPM, EM, BS, FM, BA, AVI, AM, AV, AAL, MO, EX, GE, PEZ, contenedor;
 
-    // Referencia al sistema de vida del jugador
-    private VidasPlayer vidasPlayer;
+    // Arreglo interno del inventario
+    private string[] slots;
+    private int[] cantidades;
+    
+    // Referencias a los botones del UI
+    private Button[] botonesInventario;
+    private bool inventarioAbierto = false;
 
     void Start()
     {
-        if (goInventario1 == null)
-            Debug.LogError("⚠️ [Inventario1] goInventario1 no está asignado en el inspector.");
-
-        muestraInventario1 = false;
-        BorraArreglo();
-
-        // Inicializar contadores
-        numPCV = numPCM = numMPV = numMPM = numMO = numEX = numGE = numPEZ = 0;
-
-        // Obtener todos los botones del panel de inventario
-        if (goInventario1 != null)
-            botonesInventario1 = goInventario1.GetComponentsInChildren<Button>(true);
-        else
-            botonesInventario1 = new Button[0];
-
-        // Buscar VidasPlayer automáticamente
-        vidasPlayer = FindObjectOfType<VidasPlayer>();
-        if (vidasPlayer == null)
-            Debug.LogWarning("⚠️ [Inventario1] No se encontró 'VidasPlayer' en la escena.");
-
-        // CONECTAR BOTONES AUTOMÁTICAMENTE
-        ConectarBotonesConFunciones();
+        InicializarInventario();
+        ObtenerReferenciasBotones();
+        CerrarInventario();
     }
 
-    public void StatusInventario()
+    void Update()
     {
-        if (goInventario1 == null) return;
-
-        if (muestraInventario1)
+        if (Input.GetKeyDown(KeyCode.I))
         {
-            muestraInventario1 = false;
-            goInventario1.SetActive(false);
-            Time.timeScale = 1;
-        }
-        else
-        {
-            muestraInventario1 = true;
-            goInventario1.SetActive(true);
-            ActualizaBotones();
-            Time.timeScale = 0;
+            ToggleInventario();
         }
     }
 
-    // ✅ NUEVO: Conectar botones con funciones de uso
+    private void InicializarInventario()
+    {
+        slots = new string[tamañoInventario];
+        cantidades = new int[tamañoInventario];
+        
+        for (int i = 0; i < tamañoInventario; i++)
+        {
+            slots[i] = "";
+            cantidades[i] = 0;
+        }
+    }
+
+    private void ObtenerReferenciasBotones()
+    {
+        if (panelInventario != null)
+        {
+            botonesInventario = panelInventario.GetComponentsInChildren<Button>();
+            ConectarBotonesConFunciones();
+        }
+    }
+
     private void ConectarBotonesConFunciones()
     {
-        if (botonesInventario1 == null || botonesInventario1.Length == 0) return;
+        if (botonesInventario == null) return;
 
-        for (int i = 0; i < botonesInventario1.Length; i++)
+        for (int i = 0; i < botonesInventario.Length; i++)
         {
-            int index = i; // Importante: capturar el índice para el closure
-            Button boton = botonesInventario1[i];
-            
-            // Remover listeners previos y agregar nuevo
-            boton.onClick.RemoveAllListeners();
-            boton.onClick.AddListener(() => OnBotonInventarioClickeado(index));
+            int index = i;
+            botonesInventario[i].onClick.RemoveAllListeners();
+            botonesInventario[i].onClick.AddListener(() => UsarItemDesdeSlot(index));
         }
+    }
+
+    public void EscribeEnArreglo(string idItem)
+    {
+        // Buscar si el item ya existe en el inventario
+        int slotExistente = BuscarSlotPorItem(idItem);
         
-        Debug.Log("🔗 [Inventario1] Botones conectados con funciones de uso");
-    }
-
-    // ✅ NUEVO: Método que se ejecuta cuando se clickea un botón del inventario
-    private void OnBotonInventarioClickeado(int indiceBoton)
-    {
-        if (indiceBoton < 0 || indiceBoton >= valoresInventario1.Length) return;
-
-        string objeto = valoresInventario1[indiceBoton];
-        Debug.Log($"🖱️ [Inventario1] Botón clickeado: {objeto} en posición {indiceBoton}");
-
-        if (!string.IsNullOrEmpty(objeto))
+        if (slotExistente != -1 && !EsObjetoUnico(idItem))
         {
-            UsarItem(objeto);
+            // Incrementar cantidad si ya existe y no es único
+            cantidades[slotExistente]++;
+            ActualizarUI();
         }
-    }
-
-    private void ActualizaBotones()
-    {
-        if (botonesInventario1 == null || botonesInventario1.Length == 0) return;
-
-        for (int i = 0; i < valoresInventario1.Length && i < botonesInventario1.Length; i++)
+        else
         {
-            string objeto = valoresInventario1[i];
-            if (string.IsNullOrEmpty(objeto))
+            // Buscar slot vacío para nuevo item
+            for (int i = 0; i < tamañoInventario; i++)
             {
-                botonesInventario1[i].GetComponent<Image>().sprite = contenedor;
-                Text textoBoton = botonesInventario1[i].GetComponentInChildren<Text>();
-                if (textoBoton != null) textoBoton.text = "";
-            }
-            else
-            {
-                DibujaElementos(i);
-            }
-        }
-    }
-
-    public void EscribeEnArreglo(string objeto)
-    {
-        Debug.Log("📦 [Inventario1] Recolectado objeto: " + objeto);
-        int pos = VerificaEnArreglo(objeto);
-
-        if (pos == -1) // No está en el inventario
-        {
-            for (int i = 0; i < valoresInventario1.Length; i++)
-            {
-                if (valoresInventario1[i] == "")
+                if (string.IsNullOrEmpty(slots[i]))
                 {
-                    valoresInventario1[i] = objeto;
-                    DibujaElementos(i);
+                    slots[i] = idItem;
+                    cantidades[i] = 1;
+                    ActualizarUI();
                     break;
                 }
             }
         }
-        else // Ya está, actualiza solo si no es único
-        {
-            if (!EsObjetoUnico(objeto))
-            {
-                DibujaElementos(pos);
-            }
-        }
+        
+        Debug.Log($" Item agregado: {idItem}");
     }
 
-    private int VerificaEnArreglo(string objeto)
+    private int BuscarSlotPorItem(string idItem)
     {
-        for (int i = 0; i < valoresInventario1.Length; i++)
+        for (int i = 0; i < tamañoInventario; i++)
         {
-            if (valoresInventario1[i] == objeto)
+            if (slots[i] == idItem)
                 return i;
         }
         return -1;
     }
 
-    public bool YaTieneObjeto(string objeto)
+    public bool YaTieneObjeto(string idItem)
     {
-        return VerificaEnArreglo(objeto) != -1;
+        return BuscarSlotPorItem(idItem) != -1;
     }
 
-    private bool EsObjetoUnico(string objeto)
+    private bool EsObjetoUnico(string idItem)
     {
-        return objeto == "EM" || objeto == "BS" || objeto == "FM" || objeto == "BA" ||
-               objeto == "AVI" || objeto == "AM" || objeto == "AV" || objeto == "AAL";
-    }
-
-    private void DibujaElementos(int i)
-    {
-        if (i < 0 || i >= botonesInventario1.Length) return;
-
-        string objeto = valoresInventario1[i];
-        Button boton = botonesInventario1[i];
-        Sprite icono = contenedor;
-        string texto = "";
-
-        switch (objeto)
+        string[] objetosUnicos = { "EM", "BS", "FM", "BA", "AVI", "AM", "AV", "AAL" };
+        foreach (string obj in objetosUnicos)
         {
-            case "PCV": icono = PCV; numPCV++; texto = "x" + numPCV; break;
-            case "PCM": icono = PCM; numPCM++; texto = "x" + numPCM; break;
-            case "MPV": icono = MPV; numMPV++; texto = "x" + numMPV; break;
-            case "MPM": icono = MPM; numMPM++; texto = "x" + numMPM; break;
-            case "MO": icono = MO; numMO++; texto = "x" + numMO; break;
-            case "EX": icono = EX; numEX++; texto = "x" + numEX; break;
-            case "GE": icono = GE; numGE++; texto = "x" + numGE; break;
-            case "PEZ": icono = PEZ; numPEZ++; texto = "x" + numPEZ; break;
-
-            // Objetos únicos
-            case "EM": icono = EM; texto = ""; break;
-            case "BS": icono = BS; texto = ""; break;
-            case "FM": icono = FM; texto = ""; break;
-            case "BA": icono = BA; texto = ""; break;
-            case "AVI": icono = AVI; texto = ""; break;
-            case "AM": icono = AM; texto = ""; break;
-            case "AV": icono = AV; texto = ""; break;
-            case "AAL": icono = AAL; texto = ""; break;
+            if (idItem == obj) return true;
         }
-
-        boton.GetComponent<Image>().sprite = icono;
-        Text textoBoton = boton.GetComponentInChildren<Text>();
-        if (textoBoton != null) textoBoton.text = texto;
+        return false;
     }
 
-    private void BorraArreglo()
+    private void ActualizarUI()
     {
-        for (int i = 0; i < valoresInventario1.Length; i++)
+        if (botonesInventario == null) return;
+
+        for (int i = 0; i < tamañoInventario && i < botonesInventario.Length; i++)
         {
-            valoresInventario1[i] = "";
+            Image imagen = botonesInventario[i].GetComponent<Image>();
+            Text texto = botonesInventario[i].GetComponentInChildren<Text>();
+
+            if (string.IsNullOrEmpty(slots[i]))
+            {
+                imagen.sprite = contenedor;
+                if (texto != null) texto.text = "";
+            }
+            else
+            {
+                imagen.sprite = ObtenerSpritePorID(slots[i]);
+                if (texto != null)
+                {
+                    texto.text = EsObjetoUnico(slots[i]) ? "" : $"x{cantidades[i]}";
+                }
+            }
         }
     }
 
-    // ✅ CORREGIDO: Método para usar objetos
-    public void UsarItem(string objeto)
+    private Sprite ObtenerSpritePorID(string idItem)
     {
-        Debug.Log("🩹 [Inventario1] Intentando usar objeto: " + objeto);
-
-        if (vidasPlayer == null)
+        switch (idItem)
         {
-            Debug.LogError("❌ [Inventario1] No se encontró referencia a VidasPlayer.");
-            return;
+            case "PCV": return PCV;
+            case "PCM": return PCM;
+            case "MPV": return MPV;
+            case "MPM": return MPM;
+            case "EM": return EM;
+            case "BS": return BS;
+            case "FM": return FM;
+            case "BA": return BA;
+            case "AVI": return AVI;
+            case "AM": return AM;
+            case "AV": return AV;
+            case "AAL": return AAL;
+            case "MO": return MO;
+            case "EX": return EX;
+            case "GE": return GE;
+            case "PEZ": return PEZ;
+            default: return contenedor;
         }
+    }
 
-        switch (objeto)
+    private void UsarItemDesdeSlot(int slotIndex)
+    {
+        if (slotIndex < 0 || slotIndex >= tamañoInventario) return;
+        if (string.IsNullOrEmpty(slots[slotIndex])) return;
+
+        string itemID = slots[slotIndex];
+        Debug.Log($" Intentando usar item: {itemID} del slot {slotIndex}");
+
+        // Lógica de uso de items
+        switch (itemID)
         {
             case "PCV":
-                if (numPCV > 0)
-                {
-                    vidasPlayer.Curar(1); // Cura 1 punto de vida
-                    numPCV--;
-                    Debug.Log("💚 [Inventario1] Usó PCV, curación aplicada. Restan: " + numPCV);
-                    
-                    // Actualizar la UI
-                    if (numPCV == 0) 
-                    {
-                        EliminaDelInventario("PCV");
-                    }
-                    ActualizaBotones();
-                }
-                else
-                {
-                    Debug.LogWarning("⚠️ [Inventario1] No hay PCV disponibles para usar");
-                }
+                UsarPocionVida(slotIndex);
                 break;
-
             case "PCM":
-                // Aquí puedes agregar lógica para el mana
-                Debug.Log("🔵 [Inventario1] Usó PCM (poción de mana)");
+                UsarPocionMana(slotIndex);
                 break;
-
             default:
-                Debug.Log($"ℹ️ [Inventario1] El objeto {objeto} no es usable o no tiene función definida");
+                Debug.Log($"ℹEl objeto {itemID} no tiene función de uso definida");
                 break;
         }
     }
 
-    private void EliminaDelInventario(string objeto)
+    private void UsarPocionVida(int slotIndex)
     {
-        int pos = VerificaEnArreglo(objeto);
-        if (pos != -1)
+        VidasPlayer vidasPlayer = FindObjectOfType<VidasPlayer>();
+        if (vidasPlayer != null)
         {
-            valoresInventario1[pos] = "";
+            vidasPlayer.Curar(1);
+            cantidades[slotIndex]--;
+            
+            if (cantidades[slotIndex] <= 0)
+            {
+                slots[slotIndex] = "";
+                cantidades[slotIndex] = 0;
+            }
+            
+            ActualizarUI();
+            Debug.Log(" Poción de vida usada");
+        }
+        else
+        {
+            Debug.LogError(" No se encontró VidasPlayer en la escena");
+        }
+    }
+
+    private void UsarPocionMana(int slotIndex)
+    {
+        // Aquí puedes agregar la lógica para el mana
+        cantidades[slotIndex]--;
+        
+        if (cantidades[slotIndex] <= 0)
+        {
+            slots[slotIndex] = "";
+            cantidades[slotIndex] = 0;
+        }
+        
+        ActualizarUI();
+        Debug.Log("🔵 Poción de mana usada");
+    }
+
+    public void ToggleInventario()
+    {
+        inventarioAbierto = !inventarioAbierto;
+        
+        if (panelInventario != null)
+        {
+            panelInventario.SetActive(inventarioAbierto);
+            if (inventarioAbierto)
+            {
+                ActualizarUI();
+                Time.timeScale = 0; // Pausa el juego
+            }
+            else
+            {
+                Time.timeScale = 1; // Reanuda el juego
+            }
+        }
+    }
+
+    public void AbrirInventario()
+    {
+        if (panelInventario != null)
+        {
+            panelInventario.SetActive(true);
+            inventarioAbierto = true;
+            ActualizarUI();
+            Time.timeScale = 0;
+        }
+    }
+
+    public void CerrarInventario()
+    {
+        if (panelInventario != null)
+        {
+            panelInventario.SetActive(false);
+            inventarioAbierto = false;
+            Time.timeScale = 1;
         }
     }
 }

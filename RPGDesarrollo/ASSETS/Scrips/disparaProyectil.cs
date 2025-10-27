@@ -5,15 +5,46 @@ using UnityEngine;
 public class disparaProyectil : MonoBehaviour
 {
     private SpriteRenderer spriteBala;
-    [SerializeField]private float velocidad = 12f;
+    [SerializeField] private float velocidad = 12f;
+    private ManaPlayer manaPlayer; // Referencia al sistema de mana
     
     void Start()
     {
+        // Buscar el sistema de mana automáticamente
+        manaPlayer = FindObjectOfType<ManaPlayer>();
+        if (manaPlayer == null)
+        {
+            Debug.LogError(" No se encontró ManaPlayer en la escena");
+        }
+
         // Debug 1: Indica que se generó la bala con más información
         Debug.Log("¡BALA GENERADA! - Objeto: " + gameObject.name + 
                  " en posición: " + transform.position +
                  " - Dirección de disparo: " + CAD.dirDistaparo +
                  " - Activo: " + gameObject.activeInHierarchy);
+                 
+        // CONSUMO DE MANA AL CREAR EL PROYECTIL
+        ConsumirManaPorDisparo();
+    }
+    
+    private void ConsumirManaPorDisparo()
+    {
+        if (manaPlayer != null)
+        {
+            int costoDisparo = 10; // Puedes ajustar este valor
+            bool manaConsumido = manaPlayer.GastarMana(costoDisparo);
+            
+            if (!manaConsumido)
+            {
+                Debug.LogWarning(" Proyectil creado pero sin mana suficiente - podría destruirse");
+                // Opcional: Destruir el proyectil si no hay mana
+                // Destroy(this.gameObject);
+            }
+        }
+        else
+        {
+            Debug.LogWarning(" No se encontró ManaPlayer - el disparo no consume mana");
+        }
     }
     
     void FixedUpdate()

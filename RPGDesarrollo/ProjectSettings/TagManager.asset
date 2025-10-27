@@ -80,9 +80,9 @@ TagManager:
   - name: Player
     uniqueID: 4189426099
     locked: 0
-  - name: NPC
-    uniqueID: 4204122977
-    locked: 0
   - name: Arboles
     uniqueID: 4250941897
+    locked: 0
+  - name: NPC
+    uniqueID: 4204122977
     locked: 0
