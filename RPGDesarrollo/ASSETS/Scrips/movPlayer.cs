@@ -27,7 +27,16 @@ public class movPlayer : MonoBehaviour
             AnimacionesMago();
         }
 
+                if (VidasPlayer.haMuerto)
+        {
+            rb.velocity = Vector2.zero;
+            anim.SetFloat("movimientoX", 0);
+            anim.SetFloat("movimientoY", 0);
+            return;
+        }
+
     }
+    
     
      private void Movimiento()
     {
@@ -91,22 +100,24 @@ public class movPlayer : MonoBehaviour
         if (CCC.atacando == false && CAD.disparando == false)
         {//Llamada de las clases de ataque
             if (PlayerMoviendose)
-         {
-             activaCapa("Caminar");
-            
-         }
-         else
-         {
+            {
+                activaCapa("Caminar");
+
+            }
+            else
+            {
                 activaCapa("ide");
 
-         } 
+            }
         }
         else
         {
-            
+
             activaCapa("Ataque");
         }
     }
+    
+    
     
     //llamar a capa correspondiente
     private void activaCapa(string nombre)

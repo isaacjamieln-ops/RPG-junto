@@ -1,48 +1,35 @@
 using UnityEngine;
-using System.Collections;
-using UnityEngine.SceneManagement;
 
-public class KeyPickup : MonoBehaviour
+public class Final : MonoBehaviour
 {
-    [Header("Configuración")]
-    public string tagJugador = "Player";     // Tag del jugador
-    public bool finalizarJuego = true;       // Si el juego termina al recoger la llave
-    public GameObject PantallaFinal;         // Pantalla de victoria (UI)
+    public string tagJugador = "Player";       // Tag del jugador
+    public GameObject pantallaFinal;           // Asigna el panel final desde el inspector
+
+    private bool juegoFinalizado = false;
+
+    private void Start()
+    {
+        // Asegúrate de que la pantalla final esté desactivada al inicio
+        if (pantallaFinal != null)
+            pantallaFinal.SetActive(false);
+    }
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        // Detectar si el jugador toca la llave
-        if (other.CompareTag(tagJugador))
+        // Verifica si el jugador tocó la llave
+        if (other.CompareTag(tagJugador) && !juegoFinalizado)
         {
-            Debug.Log("¡Llave recogida!");
+            juegoFinalizado = true;
 
-            // Desactivar la llave (ya fue recogida)
+            // Activa la pantalla final
+            if (pantallaFinal != null)
+                pantallaFinal.SetActive(true);
+
+            // Desactiva la llave para simular que fue tomada
             gameObject.SetActive(false);
 
-            // Ejecutar la secuencia final
-            if (finalizarJuego)
-            {
-                StartCoroutine(EjecutaFinal());
-            }
+            // Opcional: Detén el tiempo del juego (pausa total)
+            Time.timeScale = 0f;
         }
-    }
-
-    private IEnumerator EjecutaFinal()
-    {
-        Debug.Log("¡Has ganado el juego!");
-
-        // Esperar 1.2 segundos antes de mostrar la pantalla
-        yield return new WaitForSeconds(1.2f);
-
-        if (PantallaFinal != null)
-        {
-            PantallaFinal.SetActive(true);
-        }
-
-        // Termina el juego (solo en compilado)
-        Application.Quit();
-
-        // Alternativamente, podrías cargar una escena de victoria:
-        // SceneManager.LoadScene("EscenaVictoria");
     }
 }

@@ -1,47 +1,52 @@
 using System.Collections;
 using System.Collections.Generic;
 using NavMeshPlus.Extensions;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 
 public class Enemigo : MonoBehaviour
 {
-    //public static int vidaEnemigo = 1;
-    private float freAtaque = 2.5f, tiempoSigAtaque = 0, iniciaConteo;
+    // 🩸 Vida del enemigo (editable desde el Inspector)
+    [SerializeField] private int vida = 3;
 
+    // ⚔️ Control de ataque
+    [SerializeField] private float freAtaque = 2.5f;
+    private float tiempoSigAtaque = 0f;
+    private float iniciaConteo = 0f;
+
+    // 👁️ Detección y movimiento
     public Transform personaje;
     private NavMeshAgent agente;
     public Transform[] puntosRuta;
     private int indiceRuta = 0;
     private bool playerEnRango = false;
-    [SerializeField] private float distanciaDeteccionPlayer;
+    [SerializeField] private float distanciaDeteccionPlayer = 5f;
+    private bool estaPatrullando = true;
+    [SerializeField] private float distanciaMinimaPunto = 0.5f;
+
+    // 🧭 Visuales y animación
     private SpriteRenderer spriteEnemigo;
     private Transform mirarHacia;
     private Animator anim;
-    public int vida = 3; // cantidad de vida
-    public GameObject recompensaPrefab; // prefab de la recompensa a soltar
-    public Transform puntoDrop; // punto donde aparecerá (opcional)
 
-    // ✅ NUEVO: Variables para mejorar la patrulla
-    [SerializeField] private float distanciaMinimaPunto = 0.5f;
-    [SerializeField] private int vidaEnemigo;
-    private bool estaPatrullando = true;
-    public GameObject recompensa;
+    // 💰 Recompensa
+    [SerializeField] private GameObject recompensaPrefab;
+    [SerializeField] private Transform puntoDrop;
 
     private void Awake()
     {
         agente = GetComponent<NavMeshAgent>();
         spriteEnemigo = GetComponent<SpriteRenderer>();
+        anim = GetComponent<Animator>();
     }
 
     void Start()
     {
-        vidaEnemigo = 1;
+        // ✅ No reasignamos vida (ahora puedes editarla desde el Inspector)
         agente.updateRotation = false;
         agente.updateUpAxis = false;
-        
-        // ✅ INICIAR PATRULLA AUTOMÁTICAMENTE
+
+        // ✅ Inicia patrulla si hay puntos configurados
         if (puntosRuta.Length > 0)
         {
             agente.SetDestination(puntosRuta[indiceRuta].position);
@@ -51,60 +56,43 @@ public class Enemigo : MonoBehaviour
 
     void Update()
     {
-        this.transform.position = new Vector3(transform.position.x, transform.position.y, 0);
-        float distanciaAlJugador = Vector3.Distance(personaje.position, this.transform.position);
+        // 🔹 Mantiene al enemigo en el eje Z=0
+        transform.position = new Vector3(transform.position.x, transform.position.y, 0);
 
-        // ✅ DETECCIÓN MEJORADA DEL JUGADOR
+        float distanciaAlJugador = Vector3.Distance(personaje.position, transform.position);
         bool jugadorEnRangoAnterior = playerEnRango;
         playerEnRango = distanciaAlJugador < distanciaDeteccionPlayer;
 
-        // ✅ SI EL JUGADOR SALE DEL RANGO, VOLVER A LA PATRULLA
+        // 🔄 Si el jugador sale del rango, retoma la patrulla
         if (jugadorEnRangoAnterior && !playerEnRango)
         {
             estaPatrullando = true;
             if (puntosRuta.Length > 0)
             {
-                // Volver al punto de ruta más cercano
                 indiceRuta = ObtenerPuntoMasCercano();
                 agente.SetDestination(puntosRuta[indiceRuta].position);
                 mirarHacia = puntosRuta[indiceRuta];
             }
         }
 
-        // ✅ LÓGICA PRINCIPAL DE MOVIMIENTO
+        // 🔹 Movimiento principal
         if (playerEnRango)
         {
-            // SEGUIR AL JUGADOR
             estaPatrullando = false;
             agente.SetDestination(personaje.position);
             mirarHacia = personaje;
         }
         else if (estaPatrullando && puntosRuta.Length > 0)
         {
-            // PATRULLAR ENTRE PUNTOS
-            float distanciaAlPunto = Vector3.Distance(transform.position, puntosRuta[indiceRuta].position);
-            
-            if (distanciaAlPunto <= distanciaMinimaPunto)
-            {
-                // AVANZAR AL SIGUIENTE PUNTO
-                indiceRuta++;
-                if (indiceRuta >= puntosRuta.Length)
-                {
-                    indiceRuta = 0;
-                }
-                agente.SetDestination(puntosRuta[indiceRuta].position);
-                mirarHacia = puntosRuta[indiceRuta];
-            }
+            Patrullar();
         }
 
-        // ✅ ROTACIÓN (SIEMPRE ACTIVA)
+        // 🔁 Rotación visual
         RotaEnemigo();
 
-        // ✅ SECCIÓN DEL DAÑO (SIN MODIFICACIONES)
+        // ⏱️ Control de tiempo entre ataques
         if (tiempoSigAtaque > 0)
-        {
             tiempoSigAtaque = freAtaque + iniciaConteo - Time.time;
-        }
         else
         {
             tiempoSigAtaque = 0;
@@ -112,12 +100,28 @@ public class Enemigo : MonoBehaviour
         }
     }
 
-    // ✅ NUEVO MÉTODO: Encontrar el punto de ruta más cercano
+    // 🔹 Patrullaje automático entre puntos
+    private void Patrullar()
+    {
+        float distanciaAlPunto = Vector3.Distance(transform.position, puntosRuta[indiceRuta].position);
+
+        if (distanciaAlPunto <= distanciaMinimaPunto)
+        {
+            indiceRuta++;
+            if (indiceRuta >= puntosRuta.Length)
+                indiceRuta = 0;
+
+            agente.SetDestination(puntosRuta[indiceRuta].position);
+            mirarHacia = puntosRuta[indiceRuta];
+        }
+    }
+
+    // 🔹 Encuentra el punto de patrulla más cercano
     private int ObtenerPuntoMasCercano()
     {
         int puntoMasCercano = 0;
         float distanciaMinima = Mathf.Infinity;
-        
+
         for (int i = 0; i < puntosRuta.Length; i++)
         {
             float distancia = Vector3.Distance(transform.position, puntosRuta[i].position);
@@ -130,69 +134,55 @@ public class Enemigo : MonoBehaviour
         return puntoMasCercano;
     }
 
-    // ✅ MÉTODO DE SEGUIMIENTO (SIMPLIFICADO)
-    private void SiguePlayer(bool playerEnRango)
-    {
-        if (playerEnRango)
-        {
-            agente.SetDestination(personaje.position);
-            mirarHacia = personaje;
-        }
-    }
-
+    // 🔹 Cambia la orientación visual del enemigo
     private void RotaEnemigo()
     {
         if (mirarHacia != null)
         {
-            if (this.transform.position.x > mirarHacia.position.x)
-            {
-                spriteEnemigo.flipX = true;
-            }
-            else
-            {
-                spriteEnemigo.flipX = false;
-            }
+            spriteEnemigo.flipX = transform.position.x > mirarHacia.position.x;
         }
     }
 
-    // ✅ SECCIÓN DEL DAÑO (SIN MODIFICACIONES)
+    // ⚔️ Detección de colisión con el jugador
     private void OnTriggerEnter2D(Collider2D obj)
     {
-        if (obj.tag == "Player")
+        if (obj.CompareTag("Player"))
         {
-            tiempoSigAtaque = freAtaque;
-            iniciaConteo = Time.time;
-            obj.transform.GetComponentInChildren<VidasPlayer>().TomarDaño(1);
+            // Evita ataques múltiples instantáneos
+            if (Time.time >= iniciaConteo + freAtaque)
+            {
+                VidasPlayer vidas = obj.GetComponent<VidasPlayer>();
+                if (vidas != null)
+                {
+                    vidas.TomarDaño(1);
+                    iniciaConteo = Time.time;
+                }
+            }
         }
     }
 
+    // 🩸 Recibir daño
     public void TomarDaño(int daño)
     {
-        vidaEnemigo -= daño;
-        if (vidaEnemigo <= 0)
+        vida -= daño;
+        if (vida <= 0)
         {
-            Destroy(gameObject);
+            Morir();
         }
     }
 
-void Morir()
+    // 💀 Muerte del enemigo
+    private void Morir()
     {
         Debug.Log("El enemigo ha muerto.");
 
-        // Generar la recompensa al morir
+        // Generar recompensa si existe
         if (recompensaPrefab != null)
         {
             Vector3 posicionDrop = puntoDrop != null ? puntoDrop.position : transform.position;
             Instantiate(recompensaPrefab, posicionDrop, Quaternion.identity);
         }
-        else
-        {
-            Debug.LogWarning("No se ha asignado una recompensa al enemigo.");
-        }
 
-        // Destruir al enemigo
         Destroy(gameObject);
     }
-    }
-
-
+}

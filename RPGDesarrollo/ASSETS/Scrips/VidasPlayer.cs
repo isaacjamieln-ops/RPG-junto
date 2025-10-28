@@ -8,7 +8,7 @@ public class VidasPlayer : MonoBehaviour
     private float anchoVidaPlayer;
     public static int vida;
     private const int vidasINI = 5;
-    private bool haMuerto;
+    public static bool haMuerto;
     public static int perderVida = 1;
     public GameObject gameOver;
 
@@ -49,19 +49,38 @@ public class VidasPlayer : MonoBehaviour
         }
     }
 
+    // public void Curar(int cantidad)
+    // {
+    //     if (haMuerto)
+    //     {
+    //         return;
+    //     }
+
+    //     int vidaAntes = vida;
+    //     vida += cantidad;
+    //     if (vida > vidasINI) vida = vidasINI;
+
+    //     DibujaVida(vida);
+    // }
     public void Curar(int cantidad)
-    {
-        if (haMuerto)
-        {
-            return;
-        }
+{
+    if (haMuerto)
+        return;
 
-        int vidaAntes = vida;
-        vida += cantidad;
-        if (vida > vidasINI) vida = vidasINI;
+    // Si ya tiene la vida máxima, no se cura más
+    if (vida >= vidasINI)
+        return;
 
-        DibujaVida(vida);
-    }
+    int vidaAntes = vida;
+    vida += cantidad;
+
+    // Limita la vida al máximo permitido
+    if (vida > vidasINI)
+        vida = vidasINI;
+
+    DibujaVida(vida);
+}
+
 
     public void DibujaVida(int vida)
     {
