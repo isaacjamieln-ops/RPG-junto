@@ -2,23 +2,27 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class VolverMenu : MonoBehaviour
 {
-    // Nombre de la escena del menú principal (asegúrate que esté añadida en "Build Settings")
     [SerializeField] private string nombreMenu = "MenuPrincipal";
+    [SerializeField] private Button botonMenuRegreso;
 
-    // --------- MÉTODO PARA VOLVER AL MENÚ ---------
+    void Start()
+    {
+        if (botonMenuRegreso != null)
+        {
+            botonMenuRegreso.onClick.AddListener(VolverAlMenu);
+        }
+    }
+
     public void VolverAlMenu()
     {
-        // Restablece el tiempo en caso de estar pausado
         Time.timeScale = 1f;
-
-        // Carga la escena del menú principal
         SceneManager.LoadScene(nombreMenu);
     }
 
-    // --------- OPCIONAL: Atajo con tecla ESC ---------
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.Escape))
